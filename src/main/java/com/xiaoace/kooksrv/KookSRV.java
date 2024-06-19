@@ -1,5 +1,6 @@
 package com.xiaoace.kooksrv;
 
+
 import com.xiaoace.kooksrv.command.MinecraftCommandManager;
 import com.xiaoace.kooksrv.database.SqliteHelper;
 import com.xiaoace.kooksrv.database.dao.UserDao;
@@ -13,12 +14,19 @@ import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
 public class KookSRV extends JavaPlugin {
 
+    static {
+        //重新设置类加载器以至于可以扫描到 webp support 类
+        ImageIO.scanForPlugins();
+        Thread.currentThread().setContextClassLoader(KookSRV.class.getClassLoader());
+        ImageIO.scanForPlugins();
+    }
     @Getter
     private Bot bot;
     @Getter
@@ -59,7 +67,6 @@ public class KookSRV extends JavaPlugin {
             if (!cacheFolder.exists()) {
                 cacheFolder.mkdir();
             }
-
         } catch (Exception e) {
             Bukkit.getPluginManager().disablePlugin(this);
             throw new RuntimeException(e);
@@ -117,4 +124,5 @@ public class KookSRV extends JavaPlugin {
     private void initCacheTools() {
         this.cacheTools = new CacheTools(this);
     }
+
 }
