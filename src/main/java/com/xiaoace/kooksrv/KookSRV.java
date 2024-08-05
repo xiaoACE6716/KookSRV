@@ -23,9 +23,11 @@ public class KookSRV extends JavaPlugin {
 
     static {
         //重新设置类加载器以至于可以扫描到 webp support 类
-        ImageIO.scanForPlugins();
+        ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(KookSRV.class.getClassLoader());
         ImageIO.scanForPlugins();
+        //扫描完恢复上下文loader
+        Thread.currentThread().setContextClassLoader(ctxLoader);
     }
 
     @Getter
