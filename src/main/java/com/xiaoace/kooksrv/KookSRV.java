@@ -1,7 +1,7 @@
 package com.xiaoace.kooksrv;
 
 
-import com.xiaoace.kooksrv.command.MinecraftCommandManager;
+import com.xiaoace.kooksrv.command.LiteMinecraftCommand;
 import com.xiaoace.kooksrv.database.SqliteHelper;
 import com.xiaoace.kooksrv.database.dao.UserDao;
 import com.xiaoace.kooksrv.database.dao.impl.UserDaoImpl;
@@ -9,9 +9,12 @@ import com.xiaoace.kooksrv.kook.Bot;
 import com.xiaoace.kooksrv.listeners.ImageManager;
 import com.xiaoace.kooksrv.listeners.MinecraftListener;
 import com.xiaoace.kooksrv.utils.CacheTools;
+import dev.rollczi.litecommands.LiteCommands;
+import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
 import lombok.Getter;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.imageio.ImageIO;
@@ -38,6 +41,8 @@ public class KookSRV extends JavaPlugin {
     private CacheTools cacheTools;
     private UserDao userDao;
 
+    private LiteCommands<CommandSender> commands;
+
     private BukkitAudiences adventure;
 
     public BukkitAudiences adventure() {
@@ -61,7 +66,11 @@ public class KookSRV extends JavaPlugin {
             initCacheTools();
             initBot();
             initListener();
-            getCommand("kooksrv").setExecutor(new MinecraftCommandManager(cacheTools, userDao));
+            commands = LiteBukkitFactory.builder("kooksrv", this)
+                    .bind(UserDao.class, () -> userDao)
+                    .bind(CacheTools.class, () -> cacheTools)
+                    .commands(LiteMinecraftCommand.class)
+                    .build();
 
             this.adventure = BukkitAudiences.create(this);
 
@@ -79,6 +88,9 @@ public class KookSRV extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (commands != null) {
+            commands.unregister();
+        }
         // KOOK机器人关闭
         this.bot.getKbcClient().shutdown();
         if (this.adventure != null) {

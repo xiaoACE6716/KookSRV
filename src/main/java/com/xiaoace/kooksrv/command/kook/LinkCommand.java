@@ -7,6 +7,7 @@ import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.description.Description;
 import dev.rollczi.litecommands.annotations.execute.Execute;
+import dev.rollczi.litecommands.annotations.inject.Inject;
 import snw.jkook.command.CommandSender;
 import snw.jkook.entity.User;
 import snw.jkook.message.Message;
@@ -27,6 +28,7 @@ public class LinkCommand {
     CacheTools cacheTools;
     UserDao userDao;
 
+    @Inject
     public LinkCommand(KBCClient kbcClient, Plugin plugin, org.bukkit.plugin.Plugin mcPlugin, CacheTools cacheTools, UserDao userDao) {
         this.kbcClient = kbcClient;
         this.plugin = plugin;

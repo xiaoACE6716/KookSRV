@@ -82,6 +82,10 @@
             <id>jitpack</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>panda-repo</id>
+            <url>https://repo.panda-lang.org/releases</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -138,6 +142,11 @@
             <groupId>com.github.gotson</groupId>
             <artifactId>webp-imageio</artifactId>
             <version>0.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.rollczi</groupId>
+            <artifactId>litecommands-bukkit</artifactId>
+            <version>3.3.4</version>
         </dependency>
     </dependencies>
 </project>

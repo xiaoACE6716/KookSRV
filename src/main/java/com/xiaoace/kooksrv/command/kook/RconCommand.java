@@ -1,15 +1,16 @@
 package com.xiaoace.kooksrv.command.kook;
 
 import com.xiaoace.kooksrv.database.dao.UserDao;
+import dev.rollczi.litecommands.annotations.argument.Arg;
 import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.description.Description;
 import dev.rollczi.litecommands.annotations.execute.Execute;
-import dev.rollczi.litecommands.annotations.join.Join;
+import dev.rollczi.litecommands.annotations.inject.Inject;
+import dev.rollczi.litecommands.annotations.quoted.Quoted;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandException;
 import org.bukkit.entity.Player;
-import snw.jkook.command.CommandSender;
 import snw.jkook.entity.User;
 import snw.jkook.message.Message;
 import snw.jkook.message.TextChannelMessage;
@@ -29,6 +30,7 @@ public class RconCommand {
     org.bukkit.plugin.Plugin mcPlugin;
     UserDao userDao;
 
+    @Inject
     public RconCommand(KBCClient kbcClient, Plugin plugin, org.bukkit.plugin.Plugin mcPlugin, UserDao userDao) {
         this.kbcClient = kbcClient;
         this.plugin = plugin;
@@ -37,61 +39,57 @@ public class RconCommand {
     }
 
     @Execute
-    void execute(@Context CommandSender sender, @Context Message message, @Join String command) {
+    void execute(@Context User user, @Context Message message, @Arg("command") @Quoted String command) {
 
-        if (sender instanceof User) {
+        String kookUserID = user.getId();
+        String uuid = userDao.selectUserByKookID(kookUserID).getUuid();
 
-            String kookUserID = ((User) sender).getId();
-            String uuid = userDao.selectUserByKookID(kookUserID).getUuid();
+        if (uuid != null) {
+            OfflinePlayer player = mcPlugin.getServer().getOfflinePlayer(UUID.fromString(uuid));
+            if (player.isOp()) {
 
-            if (uuid != null) {
-                OfflinePlayer player = mcPlugin.getServer().getOfflinePlayer(UUID.fromString(uuid));
-                if (player.isOp()) {
+                mcPlugin.getServer().getScheduler().scheduleSyncDelayedTask(mcPlugin, () -> {
+
+                    try {
+                        if (mcPlugin.getServer().dispatchCommand(mcPlugin.getServer().getConsoleSender(), command)) {
+                            message.reply("命令执行成功！");
+                            mcPlugin.getLogger().info(user.getName() + "成功使用了命令: " + message.getComponent().toString());
+                        } else {
+                            message.reply("命令执行失败！");
+                            mcPlugin.getLogger().info(user.getName() + "使用命令失败: " + message.getComponent().toString());
+                        }
+
+                    } catch (CommandException e) {
+                        message.reply("命令执行失败!");
+                        mcPlugin.getLogger().info(user.getName() + "使用命令失败: " + message.getComponent().toString());
+                    }
+                });
+
+            } else {
+
+                if (player.isOnline()) {
 
                     mcPlugin.getServer().getScheduler().scheduleSyncDelayedTask(mcPlugin, () -> {
 
                         try {
-                            if (mcPlugin.getServer().dispatchCommand(mcPlugin.getServer().getConsoleSender(), command)) {
+                            if (((Player) player).performCommand(command)) {
                                 message.reply("命令执行成功！");
-                                mcPlugin.getLogger().info(((User) sender).getName() + "成功使用了命令: " + message.getComponent().toString());
+                                mcPlugin.getLogger().info(user.getName() + "成功使用了命令: " + message.getComponent().toString());
                             } else {
-                                message.reply("命令执行失败！");
-                                mcPlugin.getLogger().info(((User) sender).getName() + "使用命令失败: " + message.getComponent().toString());
+                                message.reply("命令执行失败");
+                                mcPlugin.getLogger().info(user.getName() + "使用命令失败: " + message.getComponent().toString());
+                            }
+                        } catch (NullPointerException e) {
+
+                            if (message instanceof TextChannelMessage) {
+                                ((TextChannelMessage) message).replyTemp("你不是OP,你不能离线执行命令噢");
+                            } else {
+                                message.reply("你不是OP,你不能离线执行命令噢");
                             }
 
-                        } catch (CommandException e) {
-                            message.reply("命令执行失败!");
-                            mcPlugin.getLogger().info(((User) sender).getName() + "使用命令失败: " + message.getComponent().toString());
                         }
+
                     });
-
-                } else {
-
-                    if (player.isOnline()) {
-
-                        mcPlugin.getServer().getScheduler().scheduleSyncDelayedTask(mcPlugin, () -> {
-
-                            try {
-                                if (((Player) player).performCommand(command)) {
-                                    message.reply("命令执行成功！");
-                                    mcPlugin.getLogger().info(((User) sender).getName() + "成功使用了命令: " + message.getComponent().toString());
-                                } else {
-                                    message.reply("命令执行失败");
-                                    mcPlugin.getLogger().info(((User) sender).getName() + "使用命令失败: " + message.getComponent().toString());
-                                }
-                            } catch (NullPointerException e) {
-
-                                if (message instanceof TextChannelMessage) {
-                                    ((TextChannelMessage) message).replyTemp("你不是OP,你不能离线执行命令噢");
-                                } else {
-                                    message.reply("你不是OP,你不能离线执行命令噢");
-                                }
-
-                            }
-
-                        });
-
-                    }
 
                 }
 

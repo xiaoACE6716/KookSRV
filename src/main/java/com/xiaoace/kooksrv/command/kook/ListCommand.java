@@ -4,6 +4,7 @@ import dev.rollczi.litecommands.annotations.command.Command;
 import dev.rollczi.litecommands.annotations.context.Context;
 import dev.rollczi.litecommands.annotations.description.Description;
 import dev.rollczi.litecommands.annotations.execute.Execute;
+import dev.rollczi.litecommands.annotations.inject.Inject;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import snw.jkook.command.CommandSender;
@@ -23,10 +24,10 @@ public class ListCommand {
     KBCClient kbcClient;
     Plugin plugin;
 
+    @Inject
     public ListCommand(KBCClient kbcClient, Plugin plugin) {
         this.kbcClient = kbcClient;
         this.plugin = plugin;
-
     }
 
     @Execute
